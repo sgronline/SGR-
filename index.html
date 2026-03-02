@@ -1,0 +1,204 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SGR ONLINE</title><style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f1f3f6}
+
+/* HEADER */
+header{
+  background:#0a0a0a;
+  color:#fff;
+  padding:14px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+  position:sticky;
+  top:0;
+  z-index:1000;
+}
+
+.cart-btn{
+  position:absolute;
+  right:15px;
+  top:14px;
+  cursor:pointer;
+}
+
+/* HERO */
+.hero{
+  background:linear-gradient(45deg,#0066ff,#7a00ff);
+  color:#fff;
+  text-align:center;
+  padding:35px 15px;
+}
+
+/* PRODUCTS */
+.products{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  padding:15px;
+}
+
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:10px;
+  box-shadow:0 5px 15px rgba(0,0,0,.1);
+  text-align:center;
+}
+
+.card img{width:100%;border-radius:10px}
+
+.price{color:#0066ff;font-weight:bold}
+
+.btn{
+  background:#ffcc00;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  font-weight:bold;
+}
+
+/* CART DRAWER */
+.drawer{
+  position:fixed;
+  right:-100%;
+  top:0;
+  width:85%;
+  height:100%;
+  background:#fff;
+  transition:.3s;
+  z-index:2000;
+  padding:15px;
+  overflow:auto;
+}
+
+.drawer.open{right:0}
+
+.qty{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin-top:5px;
+}
+
+.qty button{padding:2px 6px}
+
+/* CHECKOUT FORM */
+.form-box{
+  background:#fff;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+}
+
+input,textarea{
+  width:100%;
+  padding:8px;
+  margin:5px 0;
+}
+
+/* FOOTER */
+footer{
+  background:#111;
+  color:#fff;
+  text-align:center;
+  padding:20px;
+  margin-top:80px;
+}
+</style></head><body><header>
+  SGR ONLINE
+  <span class="cart-btn" onclick="toggleCart()">🛒 <span id="count">0</span></span>
+</header><section class="hero">
+  <h2>Online Shopping & Paid Drop Shipping</h2>
+</section><section class="products"><div class="card">
+  <img src="https://via.placeholder.com/300">
+  <h4>Wireless Earbuds</h4>
+  <p class="price">₹999</p>
+  <button class="btn" onclick="addToCart('Wireless Earbuds',999)">Add</button>
+</div><div class="card">
+  <img src="https://via.placeholder.com/300">
+  <h4>Smart Watch</h4>
+  <p class="price">₹1499</p>
+  <button class="btn" onclick="addToCart('Smart Watch',1499)">Add</button>
+</div></section><!-- CART DRAWER --><div class="drawer" id="drawer">
+  <h3>Your Cart</h3>
+  <div id="items"></div>
+  <hr>
+  <h4>Total: ₹<span id="total">0</span></h4>  <!-- ADDRESS FORM -->  <div class="form-box">
+    <h4>Delivery Details</h4>
+    <input id="name" placeholder="Full Name">
+    <input id="phone" placeholder="Phone Number">
+    <textarea id="address" placeholder="Full Address"></textarea>
+  </div><button class="btn" onclick="payUPI()">Pay UPI</button> <button class="btn" onclick="codOrder()">Cash on Delivery</button>
+
+</div><footer>
+<b>SGR ONLINE</b><br>
+Ultra Pro Dropshipping Store
+</footer><script>
+let cart = JSON.parse(localStorage.getItem("sgrCart")||"[]");
+
+function save(){localStorage.setItem("sgrCart",JSON.stringify(cart))}
+
+function toggleCart(){
+  document.getElementById("drawer").classList.toggle("open");
+}
+
+function addToCart(name,price){
+  let found = cart.find(i=>i.name===name);
+  if(found){found.qty++}
+  else{cart.push({name,price,qty:1})}
+  save(); render();
+}
+
+function changeQty(i,delta){
+  cart[i].qty+=delta;
+  if(cart[i].qty<=0) cart.splice(i,1);
+  save(); render();
+}
+
+function render(){
+  let box=document.getElementById("items");
+  let total=0;
+  box.innerHTML="";
+
+  cart.forEach((item,i)=>{
+    total+=item.price*item.qty;
+    box.innerHTML+=`
+      <p><b>${item.name}</b> ₹${item.price} x ${item.qty}</p>
+      <div class="qty">
+        <button onclick="changeQty(${i},-1)">-</button>
+        <button onclick="changeQty(${i},1)">+</button>
+      </div>
+      <hr>
+    `;
+  });
+
+  document.getElementById("total").innerText=total;
+  document.getElementById("count").innerText=cart.length;
+}
+
+/* UPI */
+function payUPI(){
+  window.location.href="upi://pay?pa=8918237180@ybl&pn=SGRONLINE&cu=INR";
+}
+
+/* WhatsApp COD ORDER */
+function codOrder(){
+  let name=document.getElementById("name").value;
+  let phone=document.getElementById("phone").value;
+  let address=document.getElementById("address").value;
+
+  let items=cart.map(i=>`${i.name} x${i.qty}`).join("%0A");
+
+  let msg=`New COD Order%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0AItems:%0A${items}`;
+
+  window.open("https://wa.me/918918237180?text="+msg,"_blank");
+}
+
+render();
+</script></body>
+</html>
